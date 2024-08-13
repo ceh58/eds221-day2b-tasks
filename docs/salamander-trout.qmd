@@ -1,0 +1,70 @@
+---
+title: "Mack Creek Salamander & Cutthroat Trout"
+author: "Carmen"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+execute: 
+  warning: false
+  message: false
+---
+
+## Load packages.
+
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+```
+
+## Create data frame and subset for Pacific Giant Salamanders (*Dicamptodon tenebrosus*).
+
+```{r}
+mack_verts <- read_csv(here::here("data", "AS00601.csv"))
+#lower snake case
+mack_verts <- janitor::clean_names(mack_verts)
+mc_wt_5 <- mack_verts$weight[5]
+mc_wt_5
+mc_length_8_20 <- mack_verts$length1[8:20]
+mc_length_8_20
+mc_dates <- mack_verts$sampledate
+mc_salamanders <- subset(mack_verts, species == "DITE")
+mc_salamanders
+```
+
+## Graph salamander snout-vent length vs. weight. 
+
+```{r}
+ggplot(mc_salamanders, aes(x = length1, y = weight))+
+  geom_point(aes(color = length1), show.legend = FALSE, size = 1)+
+  scale_color_gradient(low = "red", high = "green")+
+  theme_minimal()+
+  labs(title = "Snout-vent length vs. weight in Pacific Giant Salamanders",
+       subtitle = "By Carmen Hoyt",
+       x = "Snout-vent length (mm)",
+       y = "Weight (g)")
+
+ggsave(here::here("figs", "salamander_size.png"))
+```
+
+## Subset data for West Slope cutthroat trout (*Onchorhyncus clarki clarki*) and graph length vs. weight. 
+
+```{r}
+mc_trout <- subset(mack_verts, species == "ONCL")
+#mc_trout$reach
+#cols <- c("M" = "green", "U" = "purple", "L" = "yellow")
+
+ggplot(mc_trout, aes(x = length1, y = weight))+
+  geom_point(aes(color = reach))+
+  theme_minimal()+
+  facet_wrap(~reach)+
+  labs(title = "West Slope cutthroat trout length vs. weight by creek reach",
+       subtitle = "By Carmen Hoyt",
+       x = "Snout-fork length (mm)",
+       y = "Weight (g)")+
+  scale_color_manual(name = "Creek Reach", labels = c("Lower", "Middle", "Upper"), values = c("green", "purple", "yellow"))
+  
+ggsave(here::here("figs", "cutthroat_size.png"))
+```
+
